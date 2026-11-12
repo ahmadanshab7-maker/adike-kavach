@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adike Kavach – spray-window planner (prototype)</title>
+<style>
+  :root { --ink:#1b2620; --muted:#5b6a62; --bg:#eef1ee; --card:#fff; --line:#d5dcd7; --leaf:#2e6b4f; --rain:#3a6ea5; --due:#c8631f; --over:#b3261e; }
+  @media (prefers-color-scheme: dark) { :root { --ink:#e8efe9; --muted:#9db0a5; --bg:#121815; --card:#1b2420; --line:#2c3a33; --leaf:#5fc796; --rain:#6aa6e6; --due:#f0974f; --over:#ff7b72; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:1.6rem; margin:0 0 4px; } p.sub { margin:0 0 20px; color:var(--muted); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+  label { display:block; font-size:.85rem; color:var(--muted); } input { width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); font:inherit; }
+  button { padding:9px 16px; border-radius:6px; border:1px solid var(--leaf); background:var(--leaf); color:#fff; font:inherit; cursor:pointer; margin:12px 8px 0 0; }
+  button.alt { background:transparent; color:var(--leaf); } button:focus-visible, input:focus-visible { outline:3px solid var(--rain); outline-offset:2px; }
+  .chip { display:inline-block; padding:3px 10px; border-radius:99px; font-weight:600; font-size:.85rem; color:#fff; }
+  .not_due{background:var(--leaf)} .plan{background:var(--rain)} .due{background:var(--due)} .overdue{background:var(--over)}
+  .row { display:grid; grid-template-columns:88px 1fr; gap:10px; align-items:center; margin:6px 0; font-size:.85rem; }
+  .bar { display:grid; grid-template-columns:repeat(24,1fr); gap:1px; height:26px; }
+  .h { background:var(--line); } .h.r1 { background:#9cc0e6; } .h.r2 { background:var(--rain); } .h.win { box-shadow:inset 0 -5px 0 var(--leaf); }
+  .scale { display:grid; grid-template-columns:88px 1fr; gap:10px; font-size:.75rem; color:var(--muted); } .scale div:last-child { display:flex; justify-content:space-between; }
+  .legend { font-size:.8rem; color:var(--muted); margin-top:10px; } .legend span.sw { display:inline-block; width:12px; height:12px; margin:0 4px 0 12px; vertical-align:-2px; border-radius:2px; }
+  #msg { font-size:1.15rem; margin:10px 0 0; } #err { color:var(--over); }
+  .note { font-size:.85rem; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Adike Kavach</h1>
+  <p class="sub">Finds rain-free hours to spray Bordeaux mixture on areca bunches, and tracks the 40–45 day cycle. Proof-of-concept.</p>
+
+  <div class="card">
+    <div class="grid">
+      <div><label for="lat">Latitude</label><input id="lat" type="number" step="0.0001" value="12.7597"></div>
+      <div><label for="lon">Longitude</label><input id="lon" type="number" step="0.0001" value="75.2020"></div>
+      <div><label for="days">Days since last spray</label><input id="days" type="number" min="0" value="41"></div>
+      <div><label for="spray">Spraying hours needed</label><input id="spray" type="number" min="1" max="10" value="4"></div>
+      <div><label for="buffer">Rain-free hours after</label><input id="buffer" type="number" min="0" max="12" value="3"></div>
+    </div>
+    <button id="live">Check live 7-day forecast</button>
+    <button id="replay" class="alt">Replay July 2024 (observed rain)</button>
+    <p class="note">Spraying hours, rain-free buffer and the wind limit are adjustable defaults, not validated agronomy. Confirm with CPCRI / your KVK.</p>
+  </div>
+
+  <div class="card" id="out" hidden>
+    <span id="chip" class="chip"></span>
+    <p id="msg"></p>
+    <p class="note" id="detail"></p>
+    <div id="chart" role="img" aria-label="Hourly rain with feasible spray windows marked"></div>
+    <div class="legend"><span class="sw" style="background:#9cc0e6"></span>light rain<span class="sw" style="background:var(--rain)"></span>rain over 1 mm/h<span class="sw" style="background:var(--leaf)"></span>spray + dry-down window</div>
+  </div>
+  <p id="err" role="alert"></p>
+</main>
+<script src="engine.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const cfg = () => ({ sprayHours: +$('spray').value, bufferHours: +$('buffer').value });
+function rows(j) {
+  const h = j && j.hourly;
+  if (!h || !Array.isArray(h.time) || !Array.isArray(h.precipitation) || !Array.isArray(h.wind_speed_10m)) {
+    throw new Error('Weather response is missing required hourly data');
+  }
+  return h.time.map((t, i) => ({
+    t, rain: h.precipitation[i],
+    prob: Array.isArray(h.precipitation_probability) ? h.precipitation_probability[i] : null,
+    wind: h.wind_speed_10m[i]
+  }));
+}
+function validateInputs() {
+  const lat = Number($('lat').value), lon = Number($('lon').value);
+  const days = Number($('days').value), spray = Number($('spray').value), buffer = Number($('buffer').value);
+  if (!Number.isFinite(lat) || lat < -90 || lat > 90) throw new Error('Enter a valid latitude between -90 and 90');
+  if (!Number.isFinite(lon) || lon < -180 || lon > 180) throw new Error('Enter a valid longitude between -180 and 180');
+  if (!Number.isInteger(days) || days < 0) throw new Error('Days since last spray must be a non-negative whole number');
+  if (!Number.isInteger(spray) || spray < 1 || spray > 10) throw new Error('Spraying hours must be between 1 and 10');
+  if (!Number.isInteger(buffer) || buffer < 0 || buffer > 12) throw new Error('Rain-free buffer must be between 0 and 12 hours');
+  return { lat, lon, days, spray, buffer };
+}
+async function get(url) { const r = await fetch(url); if (!r.ok) throw new Error('Weather service returned ' + r.status); return r.json(); }
+
+function draw(hours, windows) {
+  const chart = $('chart'); chart.replaceChildren();
+  const sc = document.createElement('div'); sc.className = 'scale';
+  sc.append(document.createElement('div')); const ends = document.createElement('div');
+  ['12 AM','6 AM','12 PM','6 PM','12 AM'].forEach(s => { const e = document.createElement('span'); e.textContent = s; ends.append(e); }); sc.append(ends); chart.append(sc);
+  const byDay = {}; hours.forEach(x => (byDay[x.t.slice(0,10)] = byDay[x.t.slice(0,10)] || []).push(x));
+  const cover = {}; windows.forEach(w => { const s = new Set(); for (let k = w.best.startHour; k < w.best.dryUntil; k++) s.add(k); cover[w.date] = s; });
+  Object.keys(byDay).forEach(d => {
+    const row = document.createElement('div'); row.className = 'row';
+    const lab = document.createElement('div'); lab.textContent = new Date(d + 'T00:00').toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' }); row.append(lab);
+    const bar = document.createElement('div'); bar.className = 'bar';
+    byDay[d].forEach((x, i) => { const c = document.createElement('div'); c.className = 'h' + (x.rain > 1 ? ' r2' : x.rain > 0.1 ? ' r1' : '') + (cover[d] && cover[d].has(i) ? ' win' : ''); c.title = `${i}:00  ${x.rain} mm`; bar.append(c); });
+    row.append(bar); chart.append(row);
+  });
+}
+function show(res, hours, extra) {
+  $('out').hidden = false; $('err').textContent = '';
+  const chip = $('chip'); chip.className = 'chip ' + res.level;
+  chip.textContent = { not_due:'Not due', plan:'Plan the next spray', due:'Spray due', overdue:'Overdue' }[res.level];
+  $('msg').textContent = res.message; $('detail').textContent = extra || '';
+  draw(hours, Kavach.findWindows(hours, cfg()));
+}
+$('live').onclick = async () => {
+  try {
+    const v = validateInputs();
+    const u = `https://api.open-meteo.com/v1/forecast?latitude=${v.lat}&longitude=${v.lon}&hourly=precipitation,precipitation_probability,wind_speed_10m&forecast_days=7&timezone=auto`;
+    const hours = rows(await get(u)), plot = { lat:v.lat, lon:v.lon, daysSinceSpray:v.days };
+    show(Kavach.recommend(plot, hours, Date.now(), [], cfg()), hours, 'Live forecast from Open-Meteo. Windows are re-scored whenever the forecast changes.');
+  } catch (e) { $('err').textContent = 'Could not load the forecast: ' + e.message + '. Check your connection and try again.'; }
+};
+$('replay').onclick = async () => {
+  try {
+    const v = validateInputs();
+    const u = `https://archive-api.open-meteo.com/v1/archive?latitude=${v.lat}&longitude=${v.lon}&start_date=2024-07-01&end_date=2024-07-31&hourly=precipitation,wind_speed_10m&timezone=auto`;
+    const hours = rows(await get(u)), wins = Kavach.findWindows(hours, cfg());
+    const res = { level:'due', message:`Replay of observed rain, 1–31 July 2024: a ${cfg().sprayHours}-hour spray plus ${cfg().bufferHours}-hour dry-down fit on ${wins.length} of 31 days.` };
+    show(res, hours, 'Uses observed rainfall (no forecast probabilities), so it shows how often a usable window existed, not how accurate a forecast would have been. It says nothing about disease outcomes.');
+  } catch (e) { $('err').textContent = 'Could not load the archive: ' + e.message + '. Check your connection and try again.'; }
+};
+</script>
+</body>
+</html>
