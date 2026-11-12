@@ -1,80 +1,144 @@
-# Adike Kavach
+# 🌴 Adike Kavach
 
-**A proof-of-concept spray-window planner for areca nut growers.** Adike Kavach explores whether plantation-level hourly weather data can help a grower identify a potentially suitable window for a recommended Bordeaux-mixture spray and keep track of the spray interval.
+**Weather-informed spray-window planning for areca nut growers.**
 
-> **Research prototype only.** This project is not an agronomic advisory, disease diagnostic tool, or guarantee of rain-free conditions. Its spray duration, rain-free buffer, wind threshold, probability threshold, and neighbour-report thresholds are configurable assumptions that require validation with CPCRI, a Krishi Vigyan Kendra (KVK), or a qualified local agricultural expert before real-world use.
+Adike Kavach is a proof-of-concept that explores how hourly weather forecasts can help areca nut growers identify potentially suitable spray windows and keep track of spray intervals.
 
-## What is implemented
+> **Research prototype — not an agronomic advisory.** The rules and thresholds in this demo are configurable assumptions, not scientifically validated recommendations. Weather forecasts can change, and a suggested window does not guarantee rain-free conditions. Consult CPCRI, your local Krishi Vigyan Kendra (KVK), or a qualified agricultural expert before making crop-protection decisions.
 
-- **Hourly spray-window engine** (`prototype/engine.js`): checks forecast hours for a configurable spray period and rain-free buffer.
-- **Spray-cycle tracker**: labels the cycle as not due, plan, due, or overdue using configurable day thresholds.
-- **Neighbour-report calculations**: counts recent reports within a configurable radius and can raise the urgency level. This is core logic only; there is no live reporting service in this prototype.
-- **Browser demo** (`prototype/index.html`): fetches a seven-day forecast and can replay observed July 2024 weather through Open-Meteo.
-- **Unit tests** (`tests/engine.test.js`): 11 tests for the core engine.
+---
 
-## Not implemented yet
+## The problem
 
-The following are proposed for a future build and are **not** part of the current working prototype:
+Areca nut growers need to consider weather conditions when planning crop-protection sprays. Rain soon after spraying may affect application outcomes, while tracking the interval between spray cycles can be difficult.
 
-- Telegram bot and Kannada notifications
-- User accounts, garden registration, and persistent spray logs
-- Backend API, scheduler, and SQLite database
-- Live farmer disease-report submission, photo verification, and map
-- Agronomist/CPCRI/KVK validation of the decision rules
+## Our approach
 
-## Run locally
+Adike Kavach combines two simple ideas in one browser-based demo:
 
-Requirements: Node.js 18+ and Python 3 (for the simple local web server). The demo uses Open-Meteo and therefore needs an internet connection.
+- **Weather-aware planning:** evaluates hourly forecast data to identify candidate periods that meet configurable spray-duration and rain-free-buffer rules.
+- **Spray-cycle tracking:** classifies the time since the previous spray as not due, plan, due, or overdue using configurable day thresholds.
 
-```bash
-npm test
-npm start
-```
+The prototype is intended to demonstrate a decision-support workflow, not to diagnose disease or prescribe treatment.
 
-Then open http://localhost:8000. Alternatively, open `prototype/index.html` directly in a browser; serving it locally is recommended.
+## Features in this prototype
 
-## How to use the demo
+| Feature | What it does |
+|---|---|
+| Live weather check | Retrieves a seven-day hourly forecast from Open-Meteo |
+| Spray-window engine | Checks candidate hours against configurable duration and rain-free buffer settings |
+| Spray-cycle tracker | Calculates a cycle status from the days since the last spray |
+| Historical replay | Replays observed weather for July 2024 |
+| Neighbour-report logic | Includes core calculations for recent reports; no live reporting service is connected |
+| Unit tests | Tests the core decision engine |
+
+## Demo workflow
 
 1. Enter the plantation latitude and longitude.
 2. Enter the number of days since the last spray.
-3. Adjust the assumed spray duration and rain-free buffer if needed.
+3. Set the assumed spraying duration and rain-free buffer.
 4. Select **Check live 7-day forecast** or **Replay July 2024**.
-5. Review the calculated cycle status and hourly rain/window chart.
+5. Review the cycle status and hourly rainfall/window chart.
 
-The live forecast uses Open-Meteo's forecast API. The replay uses Open-Meteo's historical archive API for 1–31 July 2024. Historical replay demonstrates how the rule engine behaves with observed weather; it does not validate forecast accuracy or prove disease reduction.
+The default coordinates are sample values and should be changed to the intended plantation location.
 
-## Configuration and limitations
+## Run locally
 
-Defaults are defined in `prototype/engine.js` under `DEFAULTS`. They are deliberately exposed as configurable values rather than presented as scientifically validated thresholds. The prototype treats missing rain-probability data as unknown/zero for the window calculation; this is appropriate for the historical replay display but should not be interpreted as a measured zero probability.
+### Requirements
 
-Weather forecasts are uncertain and may change. A suggested window is only a calculation from the returned forecast, not a promise that rain will not occur. Always follow current local agricultural guidance and the product label.
+- Node.js 18 or later
+- Python 3 (for the local static web server)
+- Internet connection for Open-Meteo weather data
+
+### Start the demo
+
+Clone the repository and enter the project directory:
+
+```bash
+git clone https://github.com/ahmadanshab7-maker/adike-kavach.git
+cd adike-kavach
+```
+
+Run the tests:
+
+```bash
+npm test
+```
+
+Start the local server:
+
+```bash
+npm start
+```
+
+Open [http://localhost:8000](http://localhost:8000) in your browser.
+
+You can also open `prototype/index.html` directly, but serving it locally is recommended.
+
+## Technology
+
+- **HTML, CSS and JavaScript** — browser-based prototype and decision logic
+- **Node.js** — runs the unit-test script
+- **Python 3** — serves the static prototype locally
+- **Open-Meteo API** — forecast and historical weather data
+
+## Project status
+
+### Implemented
+
+- Browser-based prototype
+- Configurable spray-window and cycle rules
+- Open-Meteo forecast integration
+- July 2024 historical weather replay
+- Core engine unit tests
+
+### Planned — not yet implemented
+
+- Backend API, scheduler and persistent database
+- Farmer accounts, garden registration and saved spray logs
+- Telegram bot and Kannada notifications
+- Live farmer disease-report submission, photo verification and map
+- Validation of decision rules with agricultural specialists
+
+## Important limitations
+
+- The spray duration, rain-free buffer, wind limit, probability threshold, cycle interval and neighbour-report thresholds are configurable assumptions.
+- These defaults require validation against local agronomic guidance and the original CPCRI/ICAR references before any real-world use.
+- Forecasts are uncertain and may change after a recommendation is calculated.
+- Missing precipitation-probability data is treated as unknown/zero in the window calculation; it must not be interpreted as a measured zero probability.
+- Historical replay demonstrates how the rules behave with observed weather. It does not validate forecast accuracy or prove disease reduction.
+- Always follow local agricultural guidance and the product label.
 
 ## Data and attribution
 
-- Weather data: [Open-Meteo](https://open-meteo.com/) forecast and historical archive APIs. Review Open-Meteo's current attribution and licence requirements before public or commercial deployment.
-- Crop-protection timing references mentioned in the hackathon concept should be checked against the original CPCRI/ICAR publications and local expert guidance before being treated as recommendations.
+Weather data is provided through the [Open-Meteo](https://open-meteo.com/) forecast and historical archive APIs. Review Open-Meteo's current attribution and licence requirements before public or commercial deployment.
+
+Crop-protection timing references in the project concept should be checked against the original CPCRI/ICAR publications and local expert guidance.
 
 ## Repository structure
 
 ```text
 adike-kavach/
+├── assets/             # Project assets
+├── backend/            # Reserved for future backend work
+├── bot/                # Reserved for future bot integration
+├── docs/               # Reserved for project documentation
 ├── prototype/
-│   ├── engine.js
-│   └── index.html
+│   ├── engine.js       # Core decision logic
+│   └── index.html      # Browser demo
 ├── tests/
-│   └── engine.test.js
-├── backend/            # Reserved for future implementation
-├── bot/                # Reserved for future implementation
-├── docs/               # Reserved for future implementation
+│   └── engine.test.js  # Core engine tests
+├── .gitignore
 ├── package.json
 └── README.md
 ```
 
-## Team
+## Team DedSec
 
-**Team:** DedSec  
-**Project:** Adike Kavach
-Team Members:
-Ahmad Anshab
-Latheesh PG
-Safwan Ahmed
+- Ahmad Anshab
+- Latheesh PG
+- Safwan Ahmed
+
+---
+
+**Adike Kavach** · Open-innovation prototype
