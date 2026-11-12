@@ -16,14 +16,13 @@ The screenshots below show the two modes currently available in the browser prot
 
 Displays the calculated spray-cycle status, the best candidate spray window, and an hourly rainfall timeline with feasible spray-plus-dry-down periods highlighted.
 
-![Adike Kavach live 7-day forecast](<img width="1549" height="1114" alt="image" src="https://github.com/user-attachments/assets/1f9d4b99-9424-4ae5-9835-e6a7d5b0aab3" />)
+<img width="1549" height="1114" alt="image" src="https://github.com/user-attachments/assets/1f9d4b99-9424-4ae5-9835-e6a7d5b0aab3" />
 
 ### Historical weather replay — July 2024
 
 Replays observed rainfall for 1–31 July 2024 to demonstrate how the rule engine evaluates historical conditions. This is not a forecast-accuracy test and does not establish agronomic effectiveness.
+<img width="1591" height="1081" alt="image" src="https://github.com/user-attachments/assets/ab3a945e-6375-412c-8495-eac35f314017" />
 
-![Adike Kavach July 2024 historical replay](<img width="1591" height="1081" alt="image" src="https://github.com/user-attachments/assets/ab3a945e-6375-412c-8495-eac35f314017" />
-)
 
 ---
 
