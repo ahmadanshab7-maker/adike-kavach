@@ -123,11 +123,10 @@ Crop-protection timing references in the project concept should be checked again
 
 ## Repository structure
 
+The two prototype screenshots above are embedded from GitHub image attachments; they are not stored as repository files.
+
 ```text
 adike-kavach/
-├── assets/
-│   ├── screenshot-live-forecast.jpg
-│   └── screenshot-historical-replay.jpg
 ├── backend/            # Reserved for future backend work
 ├── bot/                # Reserved for future bot integration
 ├── docs/               # Reserved for future documentation
