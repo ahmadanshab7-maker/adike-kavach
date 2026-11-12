@@ -74,5 +74,7 @@ adike-kavach/
 
 **Team:** DedSec  
 **Project:** Adike Kavach
-
-Add the final team-member names and public repository URL before submitting the hackathon deck.
+Team Members:
+Ahmad Anshab
+Latheesh PG
+Safwan Ahmed
