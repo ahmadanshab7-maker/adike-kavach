@@ -149,4 +149,6 @@ adike-kavach/
 
 ---
 
-**Adike Kavach** · Open-innovation prototype
+**Adike Kavach** · Open-innovation prototype<img width="1549" height="1114" alt="image" src="https://github.com/user-attachments/assets/1f9d4b99-9424-4ae5-9835-e6a7d5b0aab3" /> <img width="1591" height="1081" alt="image" src="https://github.com/user-attachments/assets/ab3a945e-6375-412c-8495-eac35f314017" />
+
+
