@@ -8,6 +8,24 @@ Adike Kavach is a proof-of-concept that explores how hourly weather forecasts ca
 
 ---
 
+## Prototype preview
+
+The screenshots below show the two modes currently available in the browser prototype.
+
+### Live 7-day weather forecast
+
+Displays the calculated spray-cycle status, the best candidate spray window, and an hourly rainfall timeline with feasible spray-plus-dry-down periods highlighted.
+
+![Adike Kavach live 7-day forecast](assets/screenshot-live-forecast.jpg)
+
+### Historical weather replay — July 2024
+
+Replays observed rainfall for 1–31 July 2024 to demonstrate how the rule engine evaluates historical conditions. This is not a forecast-accuracy test and does not establish agronomic effectiveness.
+
+![Adike Kavach July 2024 historical replay](assets/screenshot-historical-replay.jpg)
+
+---
+
 ## The problem
 
 Areca nut growers need to consider weather conditions when planning crop-protection sprays. Rain soon after spraying may affect application outcomes, while tracking the interval between spray cycles can be difficult.
@@ -52,22 +70,10 @@ The default coordinates are sample values and should be changed to the intended 
 
 ### Start the demo
 
-Clone the repository and enter the project directory:
-
 ```bash
 git clone https://github.com/ahmadanshab7-maker/adike-kavach.git
 cd adike-kavach
-```
-
-Run the tests:
-
-```bash
 npm test
-```
-
-Start the local server:
-
-```bash
 npm start
 ```
 
@@ -119,15 +125,17 @@ Crop-protection timing references in the project concept should be checked again
 
 ```text
 adike-kavach/
-├── assets/             # Project assets
+├── assets/
+│   ├── screenshot-live-forecast.jpg
+│   └── screenshot-historical-replay.jpg
 ├── backend/            # Reserved for future backend work
 ├── bot/                # Reserved for future bot integration
-├── docs/               # Reserved for project documentation
+├── docs/               # Reserved for future documentation
 ├── prototype/
-│   ├── engine.js       # Core decision logic
-│   └── index.html      # Browser demo
+│   ├── engine.js
+│   └── index.html
 ├── tests/
-│   └── engine.test.js  # Core engine tests
+│   └── engine.test.js
 ├── .gitignore
 ├── package.json
 └── README.md
